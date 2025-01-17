@@ -31,17 +31,26 @@ void handle_child(char *cmd, int fd_in, int fd_out, char **envp)
     cmd_path = get_env_path(envp, args[0]);
     if (!cmd_path)
     {
-        // Print the error with the command name
-        fprintf(stderr, "%s: command not found\n", args[0]);
+        // Print error with format: pipex: <command>: command not found
+        fprintf(stderr, "pipex: %s: command not found\n", args[0]);
         free(args);
         exit(EXIT_FAILURE); // Exit after error
     }
 
     // Execute the command
-    execve(cmd_path, args, envp);
-    
+    if (execve(cmd_path, args, envp) == -1)
+    {
+        // Handle errors during execve
+        if (errno == EACCES)
+            fprintf(stderr, "pipex: %s: permission denied\n", args[0]);
+        else
+            fprintf(stderr, "pipex: %s: %s\n", args[0], strerror(errno));  // Print error message for other cases
+        free(args);
+        free(cmd_path);
+        exit(EXIT_FAILURE);
+    }
+
     // If execve returns, there was an error
-    perror("execve failed");
     free(args);
     free(cmd_path);
     exit(EXIT_FAILURE);
