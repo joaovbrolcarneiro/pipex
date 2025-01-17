@@ -1,0 +1,96 @@
+ **1. Filter and Count Matches**
+```bash
+echo -e "Hello\nworld\npipex" > file1.txt
+./pipex file1.txt "grep pipex" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 1
+# Shell equivalent:
+echo -e "Hello\nworld\npipex" | grep pipex | wc -l
+
+2. Count Lines Containing a Word
+bash
+Copy
+Edit
+echo -e "pipex\npipex\nworld" > file1.txt
+./pipex file1.txt "grep pipex" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 2
+# Shell equivalent:
+echo -e "pipex\npipex\nworld" | grep pipex | wc -l
+
+3. Pass Through Commands
+bash
+Copy
+Edit
+echo -e "Hello\nworld\npipex" > file1.txt
+./pipex file1.txt "cat" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 3
+# Shell equivalent:
+echo -e "Hello\nworld\npipex" | cat | wc -l
+
+4. No Matches
+bash
+Copy
+Edit
+echo -e "Hello\nworld" > file1.txt
+./pipex file1.txt "grep pipex" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 0
+# Shell equivalent:
+echo -e "Hello\nworld" | grep pipex | wc -l
+
+5. Filter Specific Lines
+bash
+Copy
+Edit
+echo -e "1\n2\n3\n4\n5" > file1.txt
+./pipex file1.txt "grep 3" "cat" file2.txt
+cat file2.txt
+# Expected output: 3
+# Shell equivalent:
+echo -e "1\n2\n3\n4\n5" | grep 3 | cat
+
+6. Case Sensitivity Test
+bash
+Copy
+Edit
+echo -e "Hello\nWorld\npipex\nPipex" > file1.txt
+./pipex file1.txt "grep pipex" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 1
+# Shell equivalent:
+echo -e "Hello\nWorld\npipex\nPipex" | grep pipex | wc -l
+
+7. Single Pipe Behavior
+bash
+Copy
+Edit
+echo -e "a\nb\nc\nd" > file1.txt
+./pipex file1.txt "grep a" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 1
+# Shell equivalent:
+echo -e "a\nb\nc\nd" | grep a | wc -l
+
+8. Words Containing Special Characters
+bash
+Copy
+Edit
+echo -e "pipex\n$Hello\n%World\n#Pipex" > file1.txt
+./pipex file1.txt "grep '\$'" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 1
+# Shell equivalent:
+echo -e "pipex\n$Hello\n%World\n#Pipex" | grep '\$' | wc -l
+
+9. Empty Input File
+bash
+Copy
+Edit
+> file1.txt
+./pipex file1.txt "grep pipex" "wc -l" file2.txt
+cat file2.txt
+# Expected output: 0
+# Shell equivalent:
+echo -e "" | grep pipex | wc -l
