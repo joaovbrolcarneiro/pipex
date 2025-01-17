@@ -1,6 +1,0 @@
-Resolved command path: /opt/homebrew/bin/grep
-Resolved command path: /opt/homebrew/sbin/grep
-Resolved command path: /usr/local/bin/grep
-Resolved command path: /System/Cryptexes/App/usr/bin/grep
-Resolved command path: /usr/bin/grep
-Hello word

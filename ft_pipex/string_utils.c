@@ -17,9 +17,6 @@ char *join_paths(char *path, char *cmd)
     joined[len1] = '/';  // Add the '/' separator
     ft_strncpy(joined + len1 + 1, cmd, len2);  // Copy cmd to joined
 
-    // Debugging print to check the joined path
-    printf("Resolved command path: %s\n", joined);
-
     return (joined);
 }
 
