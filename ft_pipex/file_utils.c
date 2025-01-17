@@ -27,7 +27,15 @@ int open_files(char *infile, char *outfile, int *infile_fd, int *outfile_fd)
     *outfile_fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (*outfile_fd < 0)
     {
-        perror("Error opening output file");
+        // Check if it's a "Permission denied" error for output file
+        if (errno == EACCES) // Permission denied
+        {
+            fprintf(stderr, "pipex: %s: Permission denied\n", outfile);
+        }
+        else
+        {
+            perror("Error opening output file");
+        }
         close(*infile_fd); // Close input file before returning
         return -1; // Indicate failure
     }
