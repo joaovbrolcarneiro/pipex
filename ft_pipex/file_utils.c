@@ -6,9 +6,18 @@ int open_files(char *infile, char *outfile, int *infile_fd, int *outfile_fd)
     *infile_fd = open(infile, O_RDONLY);
     if (*infile_fd < 0)
     {
-        perror("Error opening input file");
+        // Check if it's a "No such file or directory" error
+        if (errno == ENOENT) // File doesn't exist
+        {
+            fprintf(stderr, "pipex: %s: No such file or directory\n", infile);
+        }
+        else
+        {
+            perror("Error opening input file");
+        }
         return -1; // Indicate failure
     }
+
     // Open the output file for writing (create if it doesn't exist, truncate if it does)
     *outfile_fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (*outfile_fd < 0)
@@ -17,6 +26,7 @@ int open_files(char *infile, char *outfile, int *infile_fd, int *outfile_fd)
         close(*infile_fd); // Close input file before returning
         return -1; // Indicate failure
     }
+
     return 0; // Success
 }
 
