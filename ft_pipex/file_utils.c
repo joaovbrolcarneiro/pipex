@@ -11,6 +11,11 @@ int open_files(char *infile, char *outfile, int *infile_fd, int *outfile_fd)
         {
             fprintf(stderr, "pipex: %s: No such file or directory\n", infile);
         }
+        // Check if it's a "Permission denied" error
+        else if (errno == EACCES) // Permission denied
+        {
+            fprintf(stderr, "pipex: %s: Permission denied\n", infile);
+        }
         else
         {
             perror("Error opening input file");
@@ -29,6 +34,7 @@ int open_files(char *infile, char *outfile, int *infile_fd, int *outfile_fd)
 
     return 0; // Success
 }
+
 
 void setup_pipes(int pipe_fd[2])
 {
