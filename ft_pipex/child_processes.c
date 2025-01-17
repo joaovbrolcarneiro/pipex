@@ -31,8 +31,10 @@ void handle_child(char *cmd, int fd_in, int fd_out, char **envp)
     cmd_path = get_env_path(envp, args[0]);
     if (!cmd_path)
     {
+        // Print the error with the command name
+        fprintf(stderr, "%s: command not found\n", args[0]);
         free(args);
-        exit_with_error(ERR_CMD);
+        exit(EXIT_FAILURE); // Exit after error
     }
 
     // Execute the command

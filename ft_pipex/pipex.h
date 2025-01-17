@@ -9,7 +9,7 @@
 # include <errno.h>
 # include <string.h> // For memcpy and other helpers
 
-# define ERR_CMD "Command not found"
+# define ERR_CMD "command not found"
 # define ERR_PIPE "Pipe error"
 # define ERR_FORK "Fork error"
 # define ERR_FILE "File error"
