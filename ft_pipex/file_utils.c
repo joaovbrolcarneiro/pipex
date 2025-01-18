@@ -53,3 +53,4 @@ void setup_pipes(int pipe_fd[2])
     }
     printf("Pipe created: pipe_fd[0]=%d, pipe_fd[1]=%d\n", pipe_fd[0], pipe_fd[1]);
 }
+

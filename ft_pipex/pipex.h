@@ -8,6 +8,7 @@
 # include <sys/wait.h>
 # include <errno.h>
 # include <string.h> // For memcpy and other helpers
+# include "libft/inc/ft_printf.h"
 
 # define ERR_CMD "command not found"
 # define ERR_PIPE "Pipe error"

@@ -1,78 +1,82 @@
 #include "pipex.h"
 
-void exit_with_error(const char *message)
+void	exit_with_error(const char *message)
 {
-    perror(message);
-    exit(EXIT_FAILURE);
+	perror(message);
+	exit(EXIT_FAILURE);
 }
-int main(int argc, char **argv, char **envp)
+
+static void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd)
 {
-    int pipe_fd[2];
-    int infile_fd, outfile_fd;
-    pid_t pid1, pid2;
+	close(infile_fd);
+	close(outfile_fd);
+	close(pipe_fd[0]);
+	close(pipe_fd[1]);
+}
 
-    if (argc != 5)
-    {
-        write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
-        return (EXIT_FAILURE);
-    }
+static int	initialize_pipes_and_files(int argc, char **argv,
+			int *pipe_fd, int *fds)
+{
+	if (argc != 5)
+	{
+		write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
+		return (EXIT_FAILURE);
+	}
+	if (pipe(pipe_fd) == -1)
+	{
+		perror("Pipe creation failed");
+		return (EXIT_FAILURE);
+	}
+	if (open_files(argv[1], argv[4], &fds[0], &fds[1]) < 0)
+	{
+		close(pipe_fd[0]);
+		close(pipe_fd[1]);
+		return (EXIT_FAILURE);
+	}
+	return (EXIT_SUCCESS);
+}
 
-    // Create pipe first
-    if (pipe(pipe_fd) == -1)
-    {
-        perror("Pipe creation failed");
-        return (EXIT_FAILURE);
-    }
+static int	create_processes(char **argv, int *pipe_fd,
+			int *fds, char **envp)
+{
+	pid_t	pid1;
+	pid_t	pid2;
 
-    // Then open files
-    if (open_files(argv[1], argv[4], &infile_fd, &outfile_fd) < 0)
-    {
-        close(pipe_fd[0]);
-        close(pipe_fd[1]);
-        return (EXIT_FAILURE);
-    }
+	pid1 = fork();
+	if (pid1 < 0)
+		return (EXIT_FAILURE);
+	if (pid1 == 0)
+	{
+		close(pipe_fd[0]);
+		close(fds[1]);
+		handle_child(argv[2], fds[0], pipe_fd[1], envp);
+	}
+	pid2 = fork();
+	if (pid2 < 0)
+		return (EXIT_FAILURE);
+	if (pid2 == 0)
+	{
+		close(pipe_fd[1]);
+		close(fds[0]);
+		handle_child(argv[3], pipe_fd[0], fds[1], envp);
+	}
+	return (EXIT_SUCCESS);
+}
 
-    // First child
-    pid1 = fork();
-    if (pid1 < 0)
-    {
-        perror("First fork failed");
-        return (EXIT_FAILURE);
-    }
-    
-    if (pid1 == 0)
-    {
-        // First child needs write end of pipe
-        close(pipe_fd[0]);           // Close read end
-        close(outfile_fd);           // Close unused outfile
-        handle_child(argv[2], infile_fd, pipe_fd[1], envp);
-    }
+int	main(int argc, char **argv, char **envp)
+{
+	int		pipe_fd[2];
+	int		fds[2];
 
-    // Second child
-    pid2 = fork();
-    if (pid2 < 0)
-    {
-        perror("Second fork failed");
-        return (EXIT_FAILURE);
-    }
-    
-    if (pid2 == 0)
-    {
-        // Second child needs read end of pipe
-        close(pipe_fd[1]);           // Close write end
-        close(infile_fd);            // Close unused infile
-        handle_child(argv[3], pipe_fd[0], outfile_fd, envp);
-    }
-
-    // Parent process closes all file descriptors
-    close(infile_fd);
-    close(outfile_fd);
-    close(pipe_fd[0]);
-    close(pipe_fd[1]);
-
-    // Wait for children
-    waitpid(pid1, NULL, 0);
-    waitpid(pid2, NULL, 0);
-
-    return (EXIT_SUCCESS);
+	if (initialize_pipes_and_files(argc, argv, pipe_fd, fds) == EXIT_FAILURE)
+		return (EXIT_FAILURE);
+	if (create_processes(argv, pipe_fd, fds, envp) == EXIT_FAILURE)
+	{
+		close_all_fds(pipe_fd, fds[0], fds[1]);
+		return (EXIT_FAILURE);
+	}
+	close_all_fds(pipe_fd, fds[0], fds[1]);
+	wait(NULL);
+	wait(NULL);
+	return (EXIT_SUCCESS);
 }
