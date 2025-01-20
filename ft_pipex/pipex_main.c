@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipex_main.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/20 17:34:28 by jbrol-ca          #+#    #+#             */
+/*   Updated: 2025/01/20 18:06:42 by jbrol-ca         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "pipex.h"
 
 void	exit_with_error(const char *message)
@@ -14,7 +26,7 @@ static void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd)
 	close(pipe_fd[1]);
 }
 
-static int	initialize_pipes_and_files(int argc, char **argv,
+/*static int	initialize_pipes_and_files(int argc, char **argv,
 			int *pipe_fd, int *fds)
 {
 	if (argc != 5)
@@ -34,9 +46,9 @@ static int	initialize_pipes_and_files(int argc, char **argv,
 		return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);
-}
+}*/
 
-static int	create_processes(char **argv, int *pipe_fd,
+/*static int	create_processes(char **argv, int *pipe_fd,
 			int *fds, char **envp)
 {
 	pid_t	pid1;
@@ -61,26 +73,58 @@ static int	create_processes(char **argv, int *pipe_fd,
 		handle_child(argv[3], pipe_fd[0], fds[1], envp);
 	}
 	return (EXIT_SUCCESS);
-}
+}*/
 
-int	main(int argc, char **argv, char **envp)
-{
-	int		pipe_fd[2];
-	int		fds[2];
-	int		init_status;
-	int		create_status;
+int main(int argc, char **argv, char **envp) {
+    int pipe_fd[2];
+    int fds[2];
+    int status1, status2;
+    pid_t pid1, pid2;
 
-	init_status = initialize_pipes_and_files(argc, argv, pipe_fd, fds);
-	if (init_status == EXIT_FAILURE)
-		return (EXIT_FAILURE);
-	create_status = create_processes(argv, pipe_fd, fds, envp);
-	if (create_status == EXIT_FAILURE)
-	{
-		close_all_fds(pipe_fd, fds[0], fds[1]);
-		return (EXIT_FAILURE);
-	}
-	close_all_fds(pipe_fd, fds[0], fds[1]);
-	wait(NULL);
-	wait(NULL);
-	return (EXIT_SUCCESS);
+    if (argc != 5) {
+        write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
+        return (EXIT_FAILURE);
+    }
+
+    if (pipe(pipe_fd) == -1) {
+        perror("pipe");
+        return (EXIT_FAILURE);
+    }
+
+    // Open files but don't exit on failure
+    fds[0] = open(argv[1], O_RDONLY);
+    fds[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    pid1 = fork();
+    if (pid1 < 0)
+        return (EXIT_FAILURE);
+    if (pid1 == 0) {
+        if (fds[0] < 0) // If input file fails, use empty input
+            fds[0] = open("/dev/null", O_RDONLY);
+        close(pipe_fd[0]);
+        close(fds[1]);
+        handle_child(argv[2], fds[0], pipe_fd[1], envp);
+    }
+
+    pid2 = fork();
+    if (pid2 < 0)
+        return (EXIT_FAILURE);
+    if (pid2 == 0) {
+        if (fds[1] < 0) // If output file fails, use /dev/null
+            fds[1] = open("/dev/null", O_WRONLY);
+        close(pipe_fd[1]);
+        close(fds[0]);
+        handle_child(argv[3], pipe_fd[0], fds[1], envp);
+    }
+
+    close_all_fds(pipe_fd, fds[0], fds[1]);
+
+    // Wait for both processes in the correct order
+    waitpid(pid1, &status1, 0);
+    waitpid(pid2, &status2, 0);
+
+    // Return the exit status of the last command
+    if (WIFEXITED(status2))
+        return (WEXITSTATUS(status2));
+    return (EXIT_FAILURE);
 }
