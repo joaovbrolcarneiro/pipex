@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child_processes.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jbrol-ca <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:33:57 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 17:33:59 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/20 19:00:36 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,8 @@ void	execute_command(char *cmd, char **envp)
 	if (!cmd_path)
 	{
 		ft_printf("pipex: %s: command not found\n", args[0]);
-		free(args);
-		exit(EXIT_FAILURE);
+		free_args(args);
+		exit(127); // Command not found
 	}
 	if (execve(cmd_path, args, envp) == -1)
 	{
@@ -79,7 +79,7 @@ void	execute_command(char *cmd, char **envp)
 			ft_printf("pipex: %s: Permission denied\n", args[0]);
 		else
 			ft_printf("pipex: %s: %s\n", args[0], strerror(errno));
-		free(args);
+		free_args(args);
 		free(cmd_path);
 		exit(EXIT_FAILURE);
 	}
@@ -98,11 +98,22 @@ void	handle_child(char *cmd, int fd_in, int fd_out, char **envp)
 	if (!cmd_path)
 	{
 		ft_printf("pipex: %s: command not found\n", args[0]);
-		free(args);
+		free_args(args);  // Free individual strings and the array
 		exit(EXIT_FAILURE);
 	}
 	check_command_args(args);
 	check_sed_options(args);
-	free(args);
+	free_args(args);  // Free individual strings and the array
 	execute_command(cmd, envp);
+}
+
+void	free_args(char **args)
+{
+	size_t i = 0;
+	while (args[i])
+	{
+		free(args[i]);
+		i++;
+	}
+	free(args);
 }

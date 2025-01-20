@@ -3,14 +3,12 @@
 /*                                                        :::      ::::::::   */
 /*   split.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jbrol-ca <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:37 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 17:34:40 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/20 18:52:38 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include "pipex.h"
 
 #include "pipex.h"
 
@@ -81,7 +79,10 @@ static char	**process_splits(char const *s, char c, size_t words)
 				s++;
 			result[i] = strdup_until(start, s);
 			if (!result[i])
-				return (free_split_result(result, i), NULL);
+			{
+				free_split_result(result, i);
+				return (NULL);
+			}
 			i++;
 		}
 	}
