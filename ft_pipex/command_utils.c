@@ -1,46 +1,68 @@
 #include "pipex.h"
 
-char *get_env_path(char **envp, char *cmd)  // Modified to accept cmd parameter
+static char	*find_path_var(char **envp)
 {
-    char *path_var;
-    char **paths;
-    char *cmd_path;
-    int i;
+	int		i;
+	char	*path_var;
 
-    path_var = NULL;
-    for (i = 0; envp[i]; i++)
-    {
-        if (!ft_strncmp(envp[i], "PATH=", 5))
-        {
-            path_var = envp[i] + 5;
-            break;
-        }
-    }
-    if (!path_var)
-        return (NULL);
-    
-    paths = ft_split(path_var, ':');
-    if (!paths)
-        return (NULL);
+	i = 0;
+	path_var = NULL;
+	while (envp[i])
+	{
+		if (!ft_strncmp(envp[i], "PATH=", 5))
+		{
+			path_var = envp[i] + 5;
+			break ;
+		}
+		i++;
+	}
+	return (path_var);
+}
 
-    for (i = 0; paths[i]; i++)
-    {
-        cmd_path = join_paths(paths[i], cmd);  // Using your join_paths function
-        
-        if (access(cmd_path, X_OK) == 0)
-        {
-            // Free paths array before returning
-            for (int j = 0; paths[j]; j++)
-                free(paths[j]);
-            free(paths);
-            return (cmd_path);
-        }
-        free(cmd_path);
-    }
-    
-    // Free paths array before returning NULL
-    for (int j = 0; paths[j]; j++)
-        free(paths[j]);
-    free(paths);
-    return (NULL);
+static char	*try_paths(char **paths, char *cmd)
+{
+	int		i;
+	char	*cmd_path;
+
+	i = 0;
+	while (paths[i])
+	{
+		cmd_path = join_paths(paths[i], cmd);
+		if (access(cmd_path, X_OK) == 0)
+		{
+			free_array(paths);
+			return (cmd_path);
+		}
+		free(cmd_path);
+		i++;
+	}
+	free_array(paths);
+	return (NULL);
+}
+
+char	*get_env_path(char **envp, char *cmd)
+{
+	char	*path_var;
+	char	**paths;
+
+	path_var = find_path_var(envp);
+	if (!path_var)
+		return (NULL);
+	paths = ft_split(path_var, ':');
+	if (!paths)
+		return (NULL);
+	return (try_paths(paths, cmd));
+}
+
+void	free_array(char **arr)
+{
+	int	i;
+
+	i = 0;
+	while (arr[i])
+	{
+		free(arr[i]);
+		i++;
+	}
+	free(arr);
 }

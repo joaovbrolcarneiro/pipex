@@ -91,15 +91,6 @@ void	handle_child(char *cmd, int fd_in, int fd_out, char **envp)
 	}
 	check_command_args(args);
 	check_sed_options(args);
-	if (execve(cmd_path, args, envp) == -1)
-	{
-		if (errno == EACCES)
-			ft_printf("pipex: %s: Permission denied\n", args[0]);
-		else
-			ft_printf("pipex: %s: %s\n", args[0], strerror(errno));
-		free(args);
-		free(cmd_path);
-		exit(EXIT_FAILURE);
-	}
+	free(args);
+	execute_command(cmd, envp);
 }
-

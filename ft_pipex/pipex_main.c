@@ -67,10 +67,14 @@ int	main(int argc, char **argv, char **envp)
 {
 	int		pipe_fd[2];
 	int		fds[2];
+	int		init_status;
+	int		create_status;
 
-	if (initialize_pipes_and_files(argc, argv, pipe_fd, fds) == EXIT_FAILURE)
+	init_status = initialize_pipes_and_files(argc, argv, pipe_fd, fds);
+	if (init_status == EXIT_FAILURE)
 		return (EXIT_FAILURE);
-	if (create_processes(argv, pipe_fd, fds, envp) == EXIT_FAILURE)
+	create_status = create_processes(argv, pipe_fd, fds, envp);
+	if (create_status == EXIT_FAILURE)
 	{
 		close_all_fds(pipe_fd, fds[0], fds[1]);
 		return (EXIT_FAILURE);
