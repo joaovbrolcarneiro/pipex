@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:28 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/21 16:06:10 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/21 17:13:45 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,81 +26,36 @@ static void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd)
 	close(pipe_fd[1]);
 }
 
-/*static int	initialize_pipes_and_files(int argc, char **argv,
-			int *pipe_fd, int *fds)
+static void	check_args(int argc)
 {
-	if (argc != 5)
-	{
-		write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
-		return (EXIT_FAILURE);
-	}
-	if (pipe(pipe_fd) == -1)
-	{
-		perror("Pipe creation failed");
-		return (EXIT_FAILURE);
-	}
-	if (open_files(argv[1], argv[4], &fds[0], &fds[1]) < 0)
-	{
-		close(pipe_fd[0]);
-		close(pipe_fd[1]);
-		return (EXIT_FAILURE);
-	}
-	return (EXIT_SUCCESS);
-}*/
-
-/*static int	create_processes(char **argv, int *pipe_fd,
-			int *fds, char **envp)
-{
-	pid_t	pid1;
-	pid_t	pid2;
-
-	pid1 = fork();
-	if (pid1 < 0)
-		return (EXIT_FAILURE);
-	if (pid1 == 0)
-	{
-		close(pipe_fd[0]);
-		close(fds[1]);
-		handle_child(argv[2], fds[0], pipe_fd[1], envp);
-	}
-	pid2 = fork();
-	if (pid2 < 0)
-		return (EXIT_FAILURE);
-	if (pid2 == 0)
-	{
-		close(pipe_fd[1]);
-		close(fds[0]);
-		handle_child(argv[3], pipe_fd[0], fds[1], envp);
-	}
-	return (EXIT_SUCCESS);
-}*/
-
-int main(int argc, char **argv, char **envp)
-{
-    int pipe_fd[2];
-    int fds[2];
-    int status1, status2;
-    pid_t pid1, pid2;
-
     if (argc != 5)
     {
         write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
-        return (EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
+}
+
+static void	setup_files_and_pipe(int *pipe_fd, int *fds, char **argv)
+{
     if (pipe(pipe_fd) == -1)
-    {
-        perror("pipe");
-        return (EXIT_FAILURE);
-    }
+        exit_with_error("pipe");
     fds[0] = open(argv[1], O_RDONLY);
     fds[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fds[1] < 0)
-        perror(argv[4]);  // Print error for output file
+        perror(argv[4]);
+}
 
-    pid1 = fork();
-    if (pid1 < 0)
-        return (EXIT_FAILURE);
-    if (pid1 == 0)
+static pid_t	fork_child(void)
+{
+    pid_t pid = fork();
+    if (pid < 0)
+        exit_with_error("fork");
+    return pid;
+}
+
+static void	handle_child_process(int *pipe_fd, int *fds, char **argv, char **envp, int is_first)
+{
+    if (is_first)
     {
         if (fds[0] < 0)
             fds[0] = open("/dev/null", O_RDONLY);
@@ -108,11 +63,7 @@ int main(int argc, char **argv, char **envp)
         close(fds[1]);
         handle_child(argv[2], fds[0], pipe_fd[1], envp);
     }
-
-    pid2 = fork();
-    if (pid2 < 0)
-        return (EXIT_FAILURE);
-    if (pid2 == 0)
+    else
     {
         if (fds[1] < 0)
             fds[1] = open("/dev/null", O_WRONLY);
@@ -120,18 +71,39 @@ int main(int argc, char **argv, char **envp)
         close(fds[0]);
         handle_child(argv[3], pipe_fd[0], fds[1], envp);
     }
+}
+
+static int	handle_exit_status(int *fds, int status2)
+{
+    if (WIFEXITED(status2))
+    {
+        int exit_code = WEXITSTATUS(status2);
+        if (fds[1] < 0)
+            return EXIT_FAILURE;
+        return exit_code;
+    }
+    return EXIT_FAILURE;
+}
+
+int	main(int argc, char **argv, char **envp)
+{
+    int pipe_fd[2], fds[2], status1, status2;
+    pid_t pid1, pid2;
+
+    check_args(argc);
+    setup_files_and_pipe(pipe_fd, fds, argv);
+    
+    pid1 = fork_child();
+    if (pid1 == 0)
+        handle_child_process(pipe_fd, fds, argv, envp, 1);
+
+    pid2 = fork_child();
+    if (pid2 == 0)
+        handle_child_process(pipe_fd, fds, argv, envp, 0);
 
     close_all_fds(pipe_fd, fds[0], fds[1]);
     waitpid(pid1, &status1, 0);
     waitpid(pid2, &status2, 0);
 
-    // Return appropriate exit status
-    if (WIFEXITED(status2))
-    {
-        int exit_code = WEXITSTATUS(status2);
-        if (fds[1] < 0)  // If output file had permission error
-            return (EXIT_FAILURE);
-        return (exit_code);
-    }
-    return (EXIT_FAILURE);
+    return handle_exit_status(fds, status2);
 }
