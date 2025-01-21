@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   file_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jbrol-ca <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:11 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 17:34:13 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/21 16:06:57 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,4 +66,17 @@ char	*join_paths(char *path, char *cmd)
 	ft_strncpy(joined + len1 + 1, cmd, len2);
 	joined[len1 + len2 + 1] = '\0';
 	return (joined);
+}
+
+void	free_args(char **args)
+{
+	size_t	i;
+
+	i = 0;
+	while (args[i])
+	{
+		free(args[i]);
+		i++;
+	}
+	free(args);
 }

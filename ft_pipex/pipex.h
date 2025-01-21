@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:21 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 19:00:49 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/21 16:03:20 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,5 +48,6 @@ char	*find_path(char *cmd, char **envp);
 char	*strdup_until(const char *start, const char *end);
 char	*ft_strncpy(char *dest, const char *src, size_t n);
 void	free_args(char **args);
+
 
 #endif
