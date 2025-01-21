@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:33:57 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 19:00:36 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/21 14:45:19 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,53 +58,57 @@ static void	check_sed_options(char **args)
 	}
 }
 
-void	execute_command(char *cmd, char **envp)
+void execute_command(char *cmd, char **envp)
 {
-	char	**args;
-	char	*cmd_path;
-
-	args = ft_split(cmd, ' ');
-	if (!args)
-		exit_with_error(ERR_MALLOC);
-	cmd_path = get_env_path(envp, args[0]);
-	if (!cmd_path)
-	{
-		ft_printf("pipex: %s: command not found\n", args[0]);
-		free_args(args);
-		exit(127); // Command not found
-	}
-	if (execve(cmd_path, args, envp) == -1)
-	{
-		if (errno == EACCES)
-			ft_printf("pipex: %s: Permission denied\n", args[0]);
-		else
-			ft_printf("pipex: %s: %s\n", args[0], strerror(errno));
-		free_args(args);
-		free(cmd_path);
-		exit(EXIT_FAILURE);
-	}
+    char **args;
+    char *cmd_path;
+    
+    args = ft_split(cmd, ' ');
+    if (!args)
+        exit_with_error(ERR_MALLOC);
+    cmd_path = get_env_path(envp, args[0]);
+    if (!cmd_path)
+    {
+        write(2, "pipex: ", 7);
+        write(2, args[0], ft_strlen(args[0]));
+        write(2, ": command not found\n", 19);
+        free_args(args);
+        exit(127);
+    }
+    if (execve(cmd_path, args, envp) == -1)
+    {
+        if (errno == EACCES)
+            ft_printf("pipex: %s: Permission denied\n", args[0]);
+        else
+            ft_printf("pipex: %s: %s\n", args[0], strerror(errno));
+        free_args(args);
+        free(cmd_path);
+        exit(EXIT_FAILURE);
+    }
 }
 
-void	handle_child(char *cmd, int fd_in, int fd_out, char **envp)
+void handle_child(char *cmd, int fd_in, int fd_out, char **envp)
 {
-	char	**args;
-	char	*cmd_path;
-
-	handle_redirections(fd_in, fd_out);
-	args = ft_split(cmd, ' ');
-	if (!args)
-		exit_with_error(ERR_MALLOC);
-	cmd_path = get_env_path(envp, args[0]);
-	if (!cmd_path)
-	{
-		ft_printf("pipex: %s: command not found\n", args[0]);
-		free_args(args);  // Free individual strings and the array
-		exit(EXIT_FAILURE);
-	}
-	check_command_args(args);
-	check_sed_options(args);
-	free_args(args);  // Free individual strings and the array
-	execute_command(cmd, envp);
+    char **args;
+    char *cmd_path;
+    
+    handle_redirections(fd_in, fd_out);
+    args = ft_split(cmd, ' ');
+    if (!args)
+        exit_with_error(ERR_MALLOC);
+    cmd_path = get_env_path(envp, args[0]);
+    if (!cmd_path)
+    {
+        write(2, "pipex: ", 7);
+        write(2, args[0], ft_strlen(args[0]));
+        write(2, ": command not found\n", 19);
+        free_args(args);
+        exit(127);
+    }
+    check_command_args(args);
+    check_sed_options(args);
+    free_args(args);
+    execute_command(cmd, envp);
 }
 
 void	free_args(char **args)

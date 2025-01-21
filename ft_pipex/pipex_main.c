@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:28 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 18:06:42 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/21 14:41:51 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,31 +75,34 @@ static void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd)
 	return (EXIT_SUCCESS);
 }*/
 
-int main(int argc, char **argv, char **envp) {
+int main(int argc, char **argv, char **envp)
+{
     int pipe_fd[2];
     int fds[2];
     int status1, status2;
     pid_t pid1, pid2;
 
-    if (argc != 5) {
+    if (argc != 5)
+    {
         write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
         return (EXIT_FAILURE);
     }
-
-    if (pipe(pipe_fd) == -1) {
+    if (pipe(pipe_fd) == -1)
+    {
         perror("pipe");
         return (EXIT_FAILURE);
     }
-
-    // Open files but don't exit on failure
     fds[0] = open(argv[1], O_RDONLY);
     fds[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fds[1] < 0)
+        perror(argv[4]);  // Print error for output file
 
     pid1 = fork();
     if (pid1 < 0)
         return (EXIT_FAILURE);
-    if (pid1 == 0) {
-        if (fds[0] < 0) // If input file fails, use empty input
+    if (pid1 == 0)
+    {
+        if (fds[0] < 0)
             fds[0] = open("/dev/null", O_RDONLY);
         close(pipe_fd[0]);
         close(fds[1]);
@@ -109,8 +112,9 @@ int main(int argc, char **argv, char **envp) {
     pid2 = fork();
     if (pid2 < 0)
         return (EXIT_FAILURE);
-    if (pid2 == 0) {
-        if (fds[1] < 0) // If output file fails, use /dev/null
+    if (pid2 == 0)
+    {
+        if (fds[1] < 0)
             fds[1] = open("/dev/null", O_WRONLY);
         close(pipe_fd[1]);
         close(fds[0]);
@@ -118,13 +122,16 @@ int main(int argc, char **argv, char **envp) {
     }
 
     close_all_fds(pipe_fd, fds[0], fds[1]);
-
-    // Wait for both processes in the correct order
     waitpid(pid1, &status1, 0);
     waitpid(pid2, &status2, 0);
 
-    // Return the exit status of the last command
+    // Return appropriate exit status
     if (WIFEXITED(status2))
-        return (WEXITSTATUS(status2));
+    {
+        int exit_code = WEXITSTATUS(status2);
+        if (fds[1] < 0)  // If output file had permission error
+            return (EXIT_FAILURE);
+        return (exit_code);
+    }
     return (EXIT_FAILURE);
 }
