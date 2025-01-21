@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:37 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 18:52:38 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/21 17:38:18 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,26 +31,6 @@ static size_t	count_words(const char *s, char c)
 	return (count);
 }
 
-char	*strdup_until(const char *start, const char *end)
-{
-	size_t	len;
-	char	*str;
-	size_t	i;
-
-	len = end - start;
-	str = malloc(len + 1);
-	if (!str)
-		return (NULL);
-	i = 0;
-	while (i < len)
-	{
-		str[i] = start[i];
-		i++;
-	}
-	str[len] = '\0';
-	return (str);
-}
-
 static void	free_split_result(char **result, size_t i)
 {
 	while (i > 0)
@@ -58,11 +38,29 @@ static void	free_split_result(char **result, size_t i)
 	free(result);
 }
 
+static int	process_word(const char **s, char c, char **result, size_t *i)
+{
+	const char	*start;
+
+	while (**s == c)
+		(*s)++;
+	if (**s)
+	{
+		start = *s;
+		while (**s && **s != c)
+			(*s)++;
+		result[*i] = strdup_until(start, *s);
+		if (!result[*i])
+			return (0);
+		(*i)++;
+	}
+	return (1);
+}
+
 static char	**process_splits(char const *s, char c, size_t words)
 {
 	char		**result;
 	size_t		i;
-	const char	*start;
 
 	result = malloc((words + 1) * sizeof(char *));
 	if (!result)
@@ -70,20 +68,10 @@ static char	**process_splits(char const *s, char c, size_t words)
 	i = 0;
 	while (*s)
 	{
-		while (*s == c)
-			s++;
-		if (*s)
+		if (!process_word(&s, c, result, &i))
 		{
-			start = s;
-			while (*s && *s != c)
-				s++;
-			result[i] = strdup_until(start, s);
-			if (!result[i])
-			{
-				free_split_result(result, i);
-				return (NULL);
-			}
-			i++;
+			free_split_result(result, i);
+			return (NULL);
 		}
 	}
 	result[i] = NULL;

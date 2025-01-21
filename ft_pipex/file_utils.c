@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:11 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/21 16:06:57 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/21 17:31:36 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,4 +79,10 @@ void	free_args(char **args)
 		i++;
 	}
 	free(args);
+}
+
+void	exit_with_error(const char *message)
+{
+	perror(message);
+	exit(EXIT_FAILURE);
 }

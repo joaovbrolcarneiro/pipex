@@ -5,11 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/20 17:34:21 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/21 16:03:20 by jbrol-ca         ###   ########.fr       */
+/*   Created: 2025/01/21 18:16:16 by jbrol-ca          #+#    #+#             */
+/*   Updated: 2025/01/21 18:18:54 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+/* pipex.h */
 #ifndef PIPEX_H
 # define PIPEX_H
 
@@ -28,10 +29,17 @@
 # define ERR_FILE "File error"
 # define ERR_MALLOC "Memory allocation error"
 
+/* Struct for process IDs */
+typedef struct s_pid
+{
+	pid_t	pid1;
+	pid_t	pid2;
+}	t_pid;
+
 /* Function Prototypes */
 void	exit_with_error(const char *message);
-int		open_files(char *infile, char *outfile,
-			int *infile_fd, int *outfile_fd);
+int		open_files(char *infile, char *outfile, \
+int *infile_fd, int *outfile_fd);
 void	setup_pipes(int pipe_fd[2]);
 void	execute_command(char *cmd, char **envp);
 void	handle_child(char *cmd, int fd_in, int fd_out, char **envp);
@@ -48,6 +56,8 @@ char	*find_path(char *cmd, char **envp);
 char	*strdup_until(const char *start, const char *end);
 char	*ft_strncpy(char *dest, const char *src, size_t n);
 void	free_args(char **args);
-
+void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd);
+void	check_args(int argc);
+void	setup_files_and_pipe(int *pipe_fd, int *fds, char **argv);
 
 #endif
