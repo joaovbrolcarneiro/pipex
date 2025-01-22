@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils_main.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jbrol-ca <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/21 18:16:48 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/21 18:16:49 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/22 19:13:23 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,40 @@ void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd)
 	close(pipe_fd[1]);
 }
 
-void	check_args(int argc)
+void	check_args(int argc, char **argv)
 {
 	if (argc != 5)
 	{
 		write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
-		exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);  // Exit immediately if arguments are incorrect
+	}
+
+	// Check if the input file exists
+	if (access(argv[1], F_OK) == -1)  // File does not exist
+	{
+		ft_printf("pipex: no such file or directory: %s\n", argv[1]);
+		return;  // Just return without exiting
+	}
+
+	// Check if the input file has read permissions
+	if (access(argv[1], R_OK) == -1)  // File is not readable
+	{
+		ft_printf("pipex: permission denied: %s\n", argv[1]);
+		return;  // Just return without exiting
+	}
+
+	// Check if the output file's directory exists (if needed)
+	if (access(argv[4], F_OK) == -1)  // Directory does not exist
+	{
+		ft_printf("pipex: no such file or directory: %s\n", argv[4]);
+		return;  // Just return without exiting
+	}
+
+	// Check if the output file has write permissions
+	if (access(argv[4], W_OK) == -1)  // File is not writable
+	{
+		ft_printf("pipex: permission denied: %s\n", argv[4]);
+		return;  // Just return without exiting
 	}
 }
 

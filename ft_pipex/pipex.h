@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/21 18:16:16 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/21 18:18:54 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/22 18:57:15 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ char	*strdup_until(const char *start, const char *end);
 char	*ft_strncpy(char *dest, const char *src, size_t n);
 void	free_args(char **args);
 void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd);
-void	check_args(int argc);
+void	check_args(int argc, char **argv);
 void	setup_files_and_pipe(int *pipe_fd, int *fds, char **argv);
 
 #endif

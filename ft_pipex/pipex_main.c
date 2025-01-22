@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:28 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/21 18:13:35 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/22 18:56:34 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ int	main(int argc, char **argv, char **envp)
 	int		status2;
 	t_pid	pids;
 
-	check_args(argc);
+	check_args(argc, argv);  // Updated to pass argv as well
 	setup_files_and_pipe(pipe_fd, fds, argv);
 	pids.pid1 = fork_child();
 	if (pids.pid1 == 0)
@@ -82,3 +82,4 @@ int	main(int argc, char **argv, char **envp)
 	waitpid(pids.pid2, &status2, 0);
 	return (handle_exit_status(fds, status2));
 }
+
