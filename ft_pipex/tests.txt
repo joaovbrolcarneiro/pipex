@@ -1,0 +1,119 @@
+# Setup Files
+echo "Hello world" > basic.txt
+: > empty.txt
+touch infile_without_permissions
+chmod 000 infile_without_permissions
+touch outfile_without_permissions
+chmod 000 outfile_without_permissions
+touch outfile3
+touch outfile4
+touch outfile5
+touch outfile7
+touch outfile8
+touch outfile9
+touch shell_outfile
+touch shell_outfile2
+touch shell_outfile3
+touch shell_outfile4
+touch shell_outfile5
+touch shell_outfile7
+touch shell_outfile8
+touch shell_outfile9
+
+rm basic.txt empty.txt infile_without_permissions outfile_without_permissions outfile3 outfile4 outfile5 outfile7 outfile8 outfile9 shell_outfile shell_outfile2 shell_outfile3 shell_outfile4 shell_outfile5 shell_outfile7 shell_outfile8 shell_outfile9
+
+
+# Test Cases
+
+Test 1: Process Basic File
+./pipex basic.txt "cat -e" "cat -e" outfile
+cat outfile
+
+# Equivalent shell command:
+< basic.txt cat -e | cat -e > shell_outfile
+cat shell_outfile
+
+Expected Output: Both outfile and shell_outfile should contain:
+Hello world$$
+
+Test 2: Process Empty File
+./pipex empty.txt "cat -e" "cat -e" outfile2
+cat outfile2
+
+# Equivalent shell command:
+< empty.txt cat -e | cat -e > shell_outfile2
+cat shell_outfile2
+
+Expected Output: Both outfile2 and shell_outfile2 should be empty.
+
+Test 3: Nonexistent Input File
+./pipex nonexistingfile "cat -e" "cat -e" outfile3
+cat outfile3
+
+# Equivalent shell command:
+< nonexistingfile cat -e | cat -e > shell_outfile3
+cat shell_outfile3
+
+Expected Output:
+outfile3 should not be created or should be empty.
+Shell command produces an error:
+zsh: no such file or directory: nonexistingfile
+
+Test 4: Command with Basic Input
+./pipex basic.txt "ls -la" "grep basic" outfile4
+cat outfile4
+
+# Equivalent shell command:
+< basic.txt ls -la | grep basic > shell_outfile4
+cat shell_outfile4
+
+Expected Output: Both outfile4 and shell_outfile4 should show a line containing basic.txt.
+
+Test 5: Grep Command with Empty Input
+./pipex empty.txt "grep Hello" "cat -e" outfile5
+cat outfile5
+
+# Equivalent shell command:
+< empty.txt grep Hello | cat -e > shell_outfile5
+cat shell_outfile5
+
+Expected Output: Both outfile5 and shell_outfile5 should be empty.
+
+Test 6: Input File Without Permissions
+./pipex infile_without_permissions "cat -e" "cat -e" outfile7
+cat outfile7
+
+# Equivalent shell command:
+< infile_without_permissions cat -e | cat -e > shell_outfile7
+cat shell_outfile7
+
+Expected Output:
+outfile7 should not be created, or an error should appear.
+Shell command should give a permission error:
+zsh: permission denied: infile_without_permissions
+
+Test 7: Command with Nonexistent Command
+./pipex basic.txt "nonexistentcommand" "cat -e" outfile8
+cat outfile8
+
+# Equivalent shell command:
+< basic.txt nonexistentcommand | cat -e > shell_outfile8
+cat shell_outfile8
+
+Expected Output:
+outfile8 should not be created.
+Shell command should show an error:
+zsh: command not found: nonexistentcommand
+
+Test 8: Multiple Commands with Permissions
+./pipex basic.txt "sleep 3" "cat -e" outfile9
+cat outfile9
+
+# Equivalent shell command:
+< basic.txt sleep 3 | cat -e > shell_outfile9
+cat shell_outfile9
+
+Expected Output: Both outfile9 and shell_outfile9 should contain the 3-second delay before output).
+
+# Cleanup
+rm basic.txt empty.txt infile_without_permissions outfile_without_permissions outfile3 outfile4 outfile5 outfile7 outfile8 outfile9 shell_outfile shell_outfile2 shell_outfile3 shell_outfile4 shell_outfile5 shell_outfile7 shell_outfile8 shell_outfile9
