@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jbrol-ca <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:34:03 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/20 17:34:05 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/23 15:04:04 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,4 +77,12 @@ void	free_array(char **arr)
 		i++;
 	}
 	free(arr);
+}
+
+void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd)
+{
+	close(infile_fd);
+	close(outfile_fd);
+	close(pipe_fd[0]);
+	close(pipe_fd[1]);
 }

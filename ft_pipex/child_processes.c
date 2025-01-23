@@ -6,7 +6,7 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 17:33:57 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/21 15:40:02 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/23 14:42:43 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,9 +99,9 @@ void	handle_child(char *cmd, int fd_in, int fd_out, char **envp)
 	cmd_path = get_env_path(envp, args[0]);
 	if (!cmd_path)
 	{
-		write(2, "pipex: ", 7);
+		write(2, "pipex: command not found: ", 26);
 		write(2, args[0], ft_strlen(args[0]));
-		write(2, ": command not found\n", 19);
+		write(2, "\n", 1);
 		free_args(args);
 		exit(127);
 	}

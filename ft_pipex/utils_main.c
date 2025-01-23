@@ -6,55 +6,67 @@
 /*   By: jbrol-ca <jbrol-ca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/21 18:16:48 by jbrol-ca          #+#    #+#             */
-/*   Updated: 2025/01/22 19:13:23 by jbrol-ca         ###   ########.fr       */
+/*   Updated: 2025/01/23 15:03:55 by jbrol-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	close_all_fds(int *pipe_fd, int infile_fd, int outfile_fd)
-{
-	close(infile_fd);
-	close(outfile_fd);
-	close(pipe_fd[0]);
-	close(pipe_fd[1]);
-}
-
-void	check_args(int argc, char **argv)
+static void	check_usage(int argc)
 {
 	if (argc != 5)
 	{
 		write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 36);
-		exit(EXIT_FAILURE);  // Exit immediately if arguments are incorrect
+		exit(EXIT_FAILURE);
 	}
+}
 
-	// Check if the input file exists
-	if (access(argv[1], F_OK) == -1)  // File does not exist
+static int	check_input_file(char *file)
+{
+	if (access(file, F_OK) == -1)
 	{
-		ft_printf("pipex: no such file or directory: %s\n", argv[1]);
-		return;  // Just return without exiting
+		ft_printf("pipex: no such file or directory: %s\n", file);
+		return (-1);
 	}
+	if (access(file, R_OK) == -1)
+	{
+		ft_printf("pipex: permission denied: %s\n", file);
+		return (-1);
+	}
+	return (0);
+}
 
-	// Check if the input file has read permissions
-	if (access(argv[1], R_OK) == -1)  // File is not readable
-	{
-		ft_printf("pipex: permission denied: %s\n", argv[1]);
-		return;  // Just return without exiting
-	}
+static int	check_output_file(char *file)
+{
+	int	fd;
 
-	// Check if the output file's directory exists (if needed)
-	if (access(argv[4], F_OK) == -1)  // Directory does not exist
+	fd = open(file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	if (fd == -1)
 	{
-		ft_printf("pipex: no such file or directory: %s\n", argv[4]);
-		return;  // Just return without exiting
+		ft_printf("pipex: permission denied: %s\n", file);
+		return (-1);
 	}
+	close(fd);
+	if (access(file, F_OK) == -1)
+	{
+		ft_printf("pipex: no such file or directory: %s\n", file);
+		return (-1);
+	}
+	if (access(file, W_OK) == -1)
+	{
+		ft_printf("pipex: permission denied: %s\n", file);
+		return (-1);
+	}
+	return (0);
+}
 
-	// Check if the output file has write permissions
-	if (access(argv[4], W_OK) == -1)  // File is not writable
-	{
-		ft_printf("pipex: permission denied: %s\n", argv[4]);
-		return;  // Just return without exiting
-	}
+void	check_args(int argc, char **argv)
+{
+	check_usage(argc);
+	if (check_input_file(argv[1]) == -1)
+		return ;
+	if (check_output_file(argv[4]) == -1)
+		return ;
 }
 
 char	*strdup_until(const char *start, const char *end)
@@ -75,14 +87,4 @@ char	*strdup_until(const char *start, const char *end)
 	}
 	str[len] = '\0';
 	return (str);
-}
-
-void	setup_files_and_pipe(int *pipe_fd, int *fds, char **argv)
-{
-	if (pipe(pipe_fd) == -1)
-		exit_with_error("pipe");
-	fds[0] = open(argv[1], O_RDONLY);
-	fds[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fds[1] < 0)
-		perror(argv[4]);
 }
